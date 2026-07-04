@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATM Bank Interface</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body {
+  background: linear-gradient(to bottom, #2a6ebb, #1c3f7a);
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+.container {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  width: 100%;
+}
+#welcomeScreen, #loginScreen, #atmMenu, #adminMenu, #actionCard {
+  background: rgba(0,0,0,0.6);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  text-align: center;
+  margin: 10px auto;
+}
+#loginScreen, #atmMenu, #adminMenu, #actionCard { display: none; }
+#atmMenu, #adminMenu { width: 350px; }
+#actionCard {
+  width: 450px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.menu-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+button {
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+  font-size: 18px;
+  padding: 15px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 45%;
+  text-align: left;
+  position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+button:hover { background-color: white; color: #2a6ebb; }
+.left-btn .arrow, .right-btn .arrow { position: absolute; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 22px; }
+.left-btn .arrow { left: 10px; } .right-btn .arrow { right: 10px; }
+.left-btn { padding-left: 40px; } .right-btn { padding-right: 40px; }
+input[type="text"], input[type="password"], input[type="number"], select {
+  padding: 10px;
+  width: 90%;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: none;
+  font-size: 18px;
+}
+#loginBtn { width: 50%; margin-top: 15px; background-color: white; color: #2a6ebb; border: none; font-weight: bold; cursor: pointer; }
+#loginBtn:hover { background-color: #14529b; color: white; }
+#message { margin-top: 10px; color: #ff9999; font-weight: bold; }
+.transaction { padding: 5px; border-radius: 4px; margin: 2px 0; }
+.depunere { background-color: #4CAF50; color: white; }
+.retragere { background-color: #F44336; color: white; }
+.transfer { background-color: #FFC107; color: black; }
+.continue-container { display: flex; gap: 10px; margin-top: 10px; justify-content: flex-start; }
+.timer-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
+.circle {
+  border: 3px solid white;
+  border-top: 3px solid #4CAF50;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-top: 5px;
+}
+@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+</style>
+</head>
+<body>
+
+<div id="welcomeScreen">
+  <h1>Bine ai venit!</h1>
+  <p>Apasă orice tastă pentru a continua...</p>
+</div>
+
+<div id="loginScreen">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Nume utilizator" />
+  <input type="password" id="password" placeholder="Parolă" />
+  <br/>
+  <button id="loginBtn">Conectare</button>
+  <div id="message"></div>
+</div>
+
+<div class="container">
+  <!-- Meniu client -->
+  <div id="atmMenu">
+    <div class="menu-row">
+      <button class="left-btn" id="btnViewInfo"><i class="fas fa-info-circle"></i> Vezi sold <span class="arrow">&lt;</span></button>
+      <button class="right-btn" id="btnDeposit"><i class="fas fa-plus-circle"></i> Depune bani <span class="arrow">&gt;</span></button>
+    </div>
+    <div class="menu-row">
+      <button class="left-btn" id="btnWithdraw"><i class="fas fa-minus-circle"></i> Retrage bani <span class="arrow">&lt;</span></button>
+      <button class="right-btn" id="btnTransfer"><i class="fas fa-exchange-alt"></i> Transferă bani <span class="arrow">&gt;</span></button>
+    </div>
+    <div class="menu-row">
+      <button class="left-btn" id="btnTransactions"><i class="fas fa-list"></i> Istoric tranzacții <span class="arrow">&lt;</span></button>
+      <button class="right-btn" id="btnLogout"><i class="fas fa-sign-out-alt"></i> Logout <span class="arrow">&gt;</span></button>
+    </div>
+  </div>
+
+  <!-- Meniu admin -->
+  <div id="adminMenu">
+    <div class="menu-row">
+      <button class="left-btn" id="btnCreareCont"><i class="fas fa-user-plus"></i> Creare cont <span class="arrow">&lt;</span></button>
+      <button class="right-btn" id="btnListareConturi"><i class="fas fa-users"></i> Listare conturi <span class="arrow">&gt;</span></button>
+    </div>
+    <div class="menu-row">
+      <button class="left-btn" id="btnInchidereCont"><i class="fas fa-user-times"></i> Închidere cont <span class="arrow">&lt;</span></button>
+      <button class="right-btn" id="btnDepozite"><i class="fas fa-piggy-bank"></i> Depozite bancare <span class="arrow">&gt;</span></button>
+    </div>
+    <div class="menu-row">
+      <button class="left-btn" id="btnConturiCurente"><i class="fas fa-wallet"></i> Conturi curente <span class="arrow">&lt;</span></button>
+      <button class="right-btn" id="btnLogoutAdmin"><i class="fas fa-sign-out-alt"></i> Logout <span class="arrow">&gt;</span></button>
+    </div>
+  </div>
+
+  <!-- Card acțiuni -->
+  <div id="actionCard"></div>
+</div>
+
+<script>
+const serverUrl = 'http://localhost:5050';
+const welcomeScreen = document.getElementById('welcomeScreen');
+const loginScreen = document.getElementById('loginScreen');
+const atmMenu = document.getElementById('atmMenu');
+const adminMenu = document.getElementById('adminMenu');
+const actionCard = document.getElementById('actionCard');
+let currentUser = null;
+let currentRole = null;
+let timerInterval = null;
+let timerCount = 10;
+
+// Welcome screen
+document.addEventListener('keydown', function onKeyPress() {
+  welcomeScreen.style.display = 'none';
+  loginScreen.style.display = 'block';
+  document.removeEventListener('keydown', onKeyPress);
+});
+
+// Login
+document.getElementById('loginBtn').addEventListener('click', async () => {
+  document.getElementById('message').textContent = '';
+  hideActionCard();
+  const username = document.getElementById('username').value.trim().toLowerCase();
+  const password = document.getElementById('password').value;
+  if(!username || !password){ document.getElementById('message').textContent='Completează toate câmpurile.'; return; }
+  try{
+    const res = await fetch(`${serverUrl}/login`,{
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username,password})
+    });
+    const data = await res.json();
+    if(res.ok && data.success){
+      loginScreen.style.display='none';
+      currentUser=username;
+      currentRole=data.rol;
+      if(currentRole==='client'){ atmMenu.style.display='block'; adminMenu.style.display='none'; }
+      else{ adminMenu.style.display='block'; atmMenu.style.display='none'; }
+      document.getElementById('username').value=''; document.getElementById('password').value='';
+    } else document.getElementById('message').textContent=data.message || 'Login eșuat.';
+  } catch{ document.getElementById('message').textContent='Eroare server.'; }
+});
+
+// Card handling
+function showActionCard() {
+  actionCard.style.display = 'flex';
+  actionCard.style.opacity = '0';
+  setTimeout(()=>{ actionCard.style.opacity='1'; },10);
+}
+function hideActionCard() {
+  actionCard.style.opacity='0';
+  clearInterval(timerInterval);
+  setTimeout(()=>{ actionCard.style.display='none'; actionCard.innerHTML=''; },500);
+}
+
+// Continue prompt client
+function showContinuePrompt() {
+  clearInterval(timerInterval);
+  timerCount = 10;
+  actionCard.innerHTML += `
+    <div class="continue-container">
+      <button id="continueYes">Da</button>
+      <button id="continueNo">Nu</button>
+    </div>
+    <div class="timer-container">
+      <span id="timerCount">${timerCount}</span>
+      <div class="circle"></div>
+    </div>
+  `;
+  const timerSpan=document.getElementById('timerCount');
+  timerInterval=setInterval(()=>{
+    timerCount--;
+    timerSpan.textContent=timerCount;
+    if(timerCount<=0){ clearInterval(timerInterval); logoutClient(); }
+  },1000);
+  document.getElementById('continueYes').onclick=()=>{ clearInterval(timerInterval); hideActionCard(); };
+  document.getElementById('continueNo').onclick=()=>{ clearInterval(timerInterval); alert('Vă mulțumim!'); logoutClient(); };
+}
+
+// Logout
+function logoutClient(){
+  hideActionCard();
+  atmMenu.style.display='none';
+  adminMenu.style.display='none';
+  loginScreen.style.display='block';
+  currentUser=null;
+  currentRole=null;
+}
+
+/* ---------------------------------------------------------
+                FUNCȚII CLIENT
+---------------------------------------------------------- */
+async function verificareSold() {
+  showActionCard();
+  actionCard.innerHTML = `<h3>Sold curent:</h3>`;
+  try{
+    const res=await fetch(`${serverUrl}/client/verificare_sold`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({utilizator:currentUser})});
+    const data=await res.json();
+    if(res.ok){ actionCard.innerHTML+=`<div class="transaction depunere">${data.sold} RON</div>`; }
+    else { actionCard.innerHTML+=`<div class="transaction retragere">Eroare: ${data.message||'Nu s-a putut obține soldul'}</div>`; }
+  } catch { actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+  showContinuePrompt();
+}
+
+async function depunereBani() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Depunere bani</h3>
+  <input type="number" id="depSum" placeholder="Suma RON"/>
+  <button id="depBtn">Trimite</button>`;
+  document.getElementById('depBtn').onclick=async()=>{
+    const suma=Number(document.getElementById('depSum').value);
+    if(isNaN(suma)||suma<=0){ actionCard.innerHTML+=`<div class="transaction retragere">Sumă invalidă</div>`; showContinuePrompt(); return; }
+    try{
+      const res=await fetch(`${serverUrl}/client/depunere_bani`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({utilizator:currentUser,suma})});
+      const data=await res.json();
+      if(res.ok) actionCard.innerHTML+=`<div class="transaction depunere">Depunere reușită! Sold actualizat: ${data.sold} RON</div>`;
+      else actionCard.innerHTML+=`<div class="transaction retragere">Eroare depunere: ${data.message||'Nu s-a efectuat depunerea'}</div>`;
+    } catch { actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+    showContinuePrompt();
+  };
+}
+
+async function retragereBani() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Retragere bani</h3>
+  <input type="number" id="retSum" placeholder="Suma RON"/>
+  <button id="retBtn">Trimite</button>`;
+  document.getElementById('retBtn').onclick=async()=>{
+    const suma=Number(document.getElementById('retSum').value);
+    if(isNaN(suma)||suma<=0){ actionCard.innerHTML+=`<div class="transaction retragere">Sumă invalidă</div>`; showContinuePrompt(); return; }
+    try{
+      const res=await fetch(`${serverUrl}/client/retragere_bani`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({utilizator:currentUser,suma})});
+      const data=await res.json();
+      if(res.ok) actionCard.innerHTML+=`<div class="transaction retragere">Retragere reușită! Sold actualizat: ${data.sold} RON</div>`;
+      else actionCard.innerHTML+=`<div class="transaction retragere">Eroare retragere: ${data.message||'Nu s-a efectuat retragerea'}</div>`;
+    } catch { actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+    showContinuePrompt();
+  };
+}
+
+async function transferBani() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Transfer bani</h3>
+  <input type="text" id="destUser" placeholder="Destinatar"/>
+  <input type="number" id="transSum" placeholder="Suma RON"/>
+  <button id="transBtn">Trimite</button>`;
+  document.getElementById('transBtn').onclick=async()=>{
+    const dest=document.getElementById('destUser').value.trim().toLowerCase();
+    const suma=Number(document.getElementById('transSum').value);
+    if(!dest||isNaN(suma)||suma<=0){ actionCard.innerHTML+=`<div class="transaction retragere">Date invalide</div>`; showContinuePrompt(); return; }
+    try{
+      const existaRes=await fetch(`${serverUrl}/client/verifica_destinatar/${encodeURIComponent(dest)}`);
+      const existaData=await existaRes.json();
+      if(!existaData.exista){ actionCard.innerHTML+=`<div class="transaction retragere">Destinatar inexistent</div>`; showContinuePrompt(); return; }
+      const res=await fetch(`${serverUrl}/client/transfer_bani`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({utilizator:currentUser,destinatar:dest,suma})});
+      const data=await res.json();
+      if(res.ok) actionCard.innerHTML+=`<div class="transaction transfer">Transfer reușit! Sold actualizat: ${data.sold} RON</div>`;
+      else actionCard.innerHTML+=`<div class="transaction retragere">Eroare transfer: ${data.message||'Nu s-a efectuat transferul'}</div>`;
+    } catch { actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+    showContinuePrompt();
+  };
+}
+
+async function istoricTranzactii() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Istoric tranzacții</h3>`;
+  try{
+    const res=await fetch(`${serverUrl}/client/istoric_tranzactii/${currentUser}`);
+    const data=await res.json();
+    if(res.ok && data.tranzactii.length>0){
+      data.tranzactii.forEach(tr=>{
+        let cls='transaction';
+        if(tr.toLowerCase().includes('depunere')) cls+=' depunere';
+        else if(tr.toLowerCase().includes('retragere')) cls+=' retragere';
+        else if(tr.toLowerCase().includes('transfer')) cls+=' transfer';
+        actionCard.innerHTML+=`<div class="${cls}">${tr}</div>`;
+      });
+    } else { actionCard.innerHTML+=`<div class="transaction retragere">Nu există tranzacții</div>`; }
+  } catch{ actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+  showContinuePrompt();
+}
+
+/* ---------------------------------------------------------
+                FUNCȚII ADMIN
+---------------------------------------------------------- */
+async function creareCont() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Creare cont</h3>
+  <input type="text" id="newUser" placeholder="Nume utilizator"/>
+  <input type="password" id="newPass" placeholder="Parolă"/>
+  <select id="newRole">
+    <option value="client">Client</option>
+    <option value="admin">Admin</option>
+  </select>
+  <input type="number" id="newSold" placeholder="Sold inițial"/>
+  <button id="createBtn">Trimite</button>`;
+  document.getElementById('createBtn').onclick=async()=>{
+    const nume=document.getElementById('newUser').value.trim().toLowerCase();
+    const parola=document.getElementById('newPass').value;
+    const rol=document.getElementById('newRole').value;
+    const sold=Number(document.getElementById('newSold').value)||0;
+    if(!nume||!parola){ actionCard.innerHTML+=`<div class="transaction retragere">Completează câmpurile obligatorii</div>`; return; }
+    try{
+      const res=await fetch(`${serverUrl}/admin/creare_cont`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nume,parola,rol,sold_initial:sold})});
+      const data=await res.json();
+      actionCard.innerHTML+=res.ok?`<div class="transaction depunere">Cont creat: ${nume}</div>`:`<div class="transaction retragere">Eroare creare cont: ${data.message||'Nu s-a creat contul'}</div>`;
+    } catch{ actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+  };
+}
+
+async function inchidereCont() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Închidere cont</h3>
+  <input type="text" id="closeUser" placeholder="Nume utilizator"/>
+  <button id="closeBtn">Trimite</button>`;
+  document.getElementById('closeBtn').onclick=async()=>{
+    const user=document.getElementById('closeUser').value.trim().toLowerCase();
+    if(!user){ actionCard.innerHTML+=`<div class="transaction retragere">Nume obligatoriu</div>`; return; }
+    try{
+      const res=await fetch(`${serverUrl}/admin/inchidere_cont`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:user})});
+      const data=await res.json();
+      actionCard.innerHTML+=res.ok?`<div class="transaction depunere">Cont ${user} închis</div>`:`<div class="transaction retragere">Eroare: ${data.message||'Nu s-a putut închide contul'}</div>`;
+    } catch{ actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+  };
+}
+
+async function listareConturi() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Lista conturi</h3>`;
+  try{
+    const res=await fetch(`${serverUrl}/admin/listare_conturi`);
+    const data=await res.json();
+    if(res.ok && data.conturi.length>0){ data.conturi.forEach(c=>actionCard.innerHTML+=`<div class="transaction">${c.nume} - ${c.rol} - ${c.sold} RON</div>`);}
+    else { actionCard.innerHTML+=`<div class="transaction retragere">Nu există conturi</div>`; }
+  } catch{ actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+}
+
+async function depoziteBancare() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Depozite bancare</h3>`;
+  try{
+    const res=await fetch(`${serverUrl}/admin/depozite_bancare`);
+    const data=await res.json();
+    if(res.ok && data.depozite_bancare.length>0){ data.depozite_bancare.forEach(d=>actionCard.innerHTML+=`<div class="transaction">${d.nume} - ${d.sold} RON</div>`);}
+    else { actionCard.innerHTML+=`<div class="transaction retragere">Nu există depozite</div>`; }
+  } catch{ actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+}
+
+async function conturiCurente() {
+  showActionCard();
+  actionCard.innerHTML=`<h3>Conturi curente</h3>`;
+  try{
+    const res=await fetch(`${serverUrl}/admin/conturi_curente`);
+    const data=await res.json();
+    if(res.ok && data.conturi_curente.length>0){ data.conturi_curente.forEach(c=>actionCard.innerHTML+=`<div class="transaction">${c.nume} - ${c.sold} RON</div>`);}
+    else { actionCard.innerHTML+=`<div class="transaction retragere">Nu există conturi curente</div>`; }
+  } catch{ actionCard.innerHTML+=`<div class="transaction retragere">Eroare conexiune</div>`; }
+}
+
+/* ---------------------------------------------------------
+          BUTOANE CLIENT
+---------------------------------------------------------- */
+document.getElementById('btnViewInfo').onclick=verificareSold;
+document.getElementById('btnDeposit').onclick=depunereBani;
+document.getElementById('btnWithdraw').onclick=retragereBani;
+document.getElementById('btnTransfer').onclick=transferBani;
+document.getElementById('btnTransactions').onclick=istoricTranzactii;
+document.getElementById('btnLogout').onclick=logoutClient;
+
+/* ---------------------------------------------------------
+          BUTOANE ADMIN
+---------------------------------------------------------- */
+document.getElementById('btnCreareCont').onclick=creareCont;
+document.getElementById('btnInchidereCont').onclick=inchidereCont;
+document.getElementById('btnListareConturi').onclick=listareConturi;
+document.getElementById('btnDepozite').onclick=depoziteBancare;
+document.getElementById('btnConturiCurente').onclick=conturiCurente;
+document.getElementById('btnLogoutAdmin').onclick=logoutClient;
+
+</script>
+</body>
+</html>
